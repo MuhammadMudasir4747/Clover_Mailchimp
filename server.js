@@ -76,53 +76,93 @@ function verifyCloverSignature(req) {
   return true;
 }
 
-app.post('/webhook/clover', async (req, res) => {
-  try {
-    if (!verifyCloverSignature(req)) return res.status(403).send('Invalid signature');
+// app.post('/webhook/clover', async (req, res) => {
+//   try {
+//     if (!verifyCloverSignature(req)) return res.status(403).send('Invalid signature');
 
-    const event = req.body;
-    const cloverCustomer = event.object || event.data || event;
-    if (!cloverCustomer || !cloverCustomer.id) {
-      console.log('Webhook: no customer object', event);
-      return res.sendStatus(200);
-    }
+//     const event = req.body;
+//     const cloverCustomer = event.object || event.data || event;
+//     if (!cloverCustomer || !cloverCustomer.id) {
+//       console.log('Webhook: no customer object', event);
+//       return res.sendStatus(200);
+//     }
 
-    const cloverId = cloverCustomer.id;
-    const firstName = cloverCustomer.firstName || cloverCustomer.givenName || '';
-    const lastName = cloverCustomer.lastName || cloverCustomer.familyName || '';
-    const email = cloverCustomer.email || null;
+//     const cloverId = cloverCustomer.id;
+//     const firstName = cloverCustomer.firstName || cloverCustomer.givenName || '';
+//     const lastName = cloverCustomer.lastName || cloverCustomer.familyName || '';
+//     const email = cloverCustomer.email || null;
 
-    let phone = null;
-    if (cloverCustomer.phones && cloverCustomer.phones.length) {
-      phone = cloverCustomer.phones[0].number;
-    } else if (cloverCustomer.phone) {
-      phone = cloverCustomer.phone;
-    }
+//     let phone = null;
+//     if (cloverCustomer.phones && cloverCustomer.phones.length) {
+//       phone = cloverCustomer.phones[0].number;
+//     } else if (cloverCustomer.phone) {
+//       phone = cloverCustomer.phone;
+//     }
 
-    const smsOptIn = !!cloverCustomer.smsOptIn || false;
+//     const smsOptIn = !!cloverCustomer.smsOptIn || false;
 
-    const updated = await Customer.findOneAndUpdate(
-      { cloverId },
-      { cloverId, firstName, lastName, email, phone, smsOptIn, raw: cloverCustomer },
-      { upsert: true, new: true }
-    );
+//     const updated = await Customer.findOneAndUpdate(
+//       { cloverId },
+//       { cloverId, firstName, lastName, email, phone, smsOptIn, raw: cloverCustomer },
+//       { upsert: true, new: true }
+//     );
 
-    if (smsOptIn && phone) {
-      try {
-        await syncContactToMailchimp(updated);
-        updated.lastSyncedToMailchimp = new Date();
-        await updated.save();
-      } catch (mErr) {
-        console.error('Mailchimp sync failed', mErr.response?.data || mErr.message);
+//     if (smsOptIn && phone) {
+//       try {
+//         await syncContactToMailchimp(updated);
+//         updated.lastSyncedToMailchimp = new Date();
+//         await updated.save();
+//       } catch (mErr) {
+//         console.error('Mailchimp sync failed', mErr.response?.data || mErr.message);
+//       }
+//     }
+
+//     res.sendStatus(200);
+//   } catch (err) {
+//     console.error('Webhook handler error', err);
+//     res.status(500).send('Server error');
+//   }
+// });
+
+app.post("/webhook/clover", async (req, res) => {
+  const event = req.body; // Clover sends customer event
+  const customerId = event.objectId;
+
+  // Get full customer details
+  const response = await axios.get(
+    `https://sandbox.dev.clover.com/v3/merchants/${process.env.CLOVER_MERCHANT_ID}/customers/${customerId}`,
+    { headers: { Authorization: `Bearer ${process.env.CLOVER_ACCESS_TOKEN}` } }
+  );
+
+  const customer = response.data;
+
+  // ✅ Only sync to Mailchimp if consent is given
+  if (customer.marketingAllowed) {
+    await axios.post(
+      `https://${process.env.MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_AUDIENCE_ID}/members`,
+      {
+        email_address: customer.emailAddresses?.[0]?.emailAddress,
+        status: "subscribed",
+        merge_fields: {
+          FNAME: customer.firstName,
+          LNAME: customer.lastName,
+        },
+      },
+      {
+        auth: {
+          username: "anystring",
+          password: process.env.MAILCHIMP_API_KEY,
+        },
       }
-    }
-
-    res.sendStatus(200);
-  } catch (err) {
-    console.error('Webhook handler error', err);
-    res.status(500).send('Server error');
+    );
   }
+
+  res.sendStatus(200);
 });
+
+
+
+
 
 async function syncContactToMailchimp(customer) {
   const base = `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0`;
