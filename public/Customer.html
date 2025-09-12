@@ -1,10 +1,10 @@
 <form method="POST" action="/add-customer">
-  <label>First Name: <input name="firstName" /></label><br/>
-  <label>Last Name: <input name="lastName" /></label><br/>
-  <label>Phone: <input name="phone" /></label><br/>
+  <input type="text" name="firstName" placeholder="First Name" />
+  <input type="text" name="lastName" placeholder="Last Name" />
+  <input type="email" name="email" placeholder="Email" required />
+  <input type="text" name="phone" placeholder="Phone" />
   <label>
-    <input type="checkbox" name="consent" value="yes" />
-    I agree to receive SMS
-  </label><br/>
-  <button type="submit">Add Customer</button>
+    <input type="checkbox" name="consent" value="yes" /> Subscribe
+  </label>
+  <button type="submit">Submit</button>
 </form>
