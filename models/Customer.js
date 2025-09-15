@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const customerSchema = new mongoose.Schema({
     
-    cloverId : {type: String, unique: true, required: true},
+    cloverId : {type: String, required: true},
     firstName: String,
     lastName: String,
     email: String,
