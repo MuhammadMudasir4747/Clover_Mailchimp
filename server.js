@@ -1,778 +1,7 @@
-// // server.js
-// require("dotenv").config();
-// const express = require("express");
-// const bodyParser = require("body-parser");
-// const mongoose = require("mongoose");
-// const axios = require("axios");
 
-// const app = express();
-// app.use(bodyParser.json());
 
-// // ----------------------
-// // MongoDB Atlas Connection
-// // ----------------------
-// mongoose
-//   .connect(process.env.MONGO_URI) // Use URI from .env
-//   .then(() => console.log("✅ Connected to MongoDB Atlas"))
-//   .catch((err) =>
-//     console.error("❌ MongoDB connection error:", err.message)
-//   );
-
-// // ----------------------
-// // Customer Schema
-// // ----------------------
-// const customerSchema = new mongoose.Schema({
-//   cloverId: { type: String, required: true, unique: true },
-//   email: { type: String, required: true },
-//   firstName: String,
-//   lastName: String,
-// });
-
-// const Customer = mongoose.model("Customer", customerSchema);
-
-// // ----------------------
-// // Mailchimp API setup
-// // ----------------------
-// const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
-// const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX; // e.g. us7
-// const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_AUDIENCE_ID;
-
-// async function syncContactToMailchimp(customer) {
-//   try {
-//     const data = {
-//       email_address: customer.email,
-//       status_if_new: "subscribed",
-//       merge_fields: {
-//         FNAME: customer.firstName || "",
-//         LNAME: customer.lastName || "",
-//       },
-//     };
-
-//     const subscriberHash = require("crypto")
-//       .createHash("md5")
-//       .update(customer.email.toLowerCase())
-//       .digest("hex");
-
-//     const response = await axios.put(
-//       `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}`,
-//       data,
-//       {
-//         headers: {
-//           Authorization: `apikey ${MAILCHIMP_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     console.log("✅ Synced to Mailchimp:", response.data.email_address);
-//   } catch (err) {
-//     console.error(
-//       "❌ Mailchimp sync error:",
-//       err.response?.data || err.message
-//     );
-//   }
-// }
-
-// // ----------------------
-// // Clover Webhook endpoint
-// // ----------------------
-// // app.post("/webhook/clover", async (req, res) => {
-// //   try {
-// //     console.log("📩 Clover Webhook Received:", req.body);
-
-// //     const { objectId, type, payload } = req.body;
-
-// //     if (type === "customer") {
-// //       const cloverCustomer = payload;
-
-// //       if (!cloverCustomer || !cloverCustomer.emailAddresses) {
-// //         console.log("⚠️ Skipping customer: no email address found.");
-// //         return res.sendStatus(200);
-// //       }
-
-// //       const email = cloverCustomer.emailAddresses[0].emailAddress;
-// //       const firstName = cloverCustomer.firstName || "";
-// //       const lastName = cloverCustomer.lastName || "";
-
-// //       // ✅ Upsert in MongoDB
-// //       const updated = await Customer.findOneAndUpdate(
-// //         { cloverId: cloverCustomer.id },
-// //         { email, firstName, lastName },
-// //         { upsert: true, new: true }
-// //       );
-
-// //       console.log("✅ Customer saved/updated:", updated);
-
-// //       // ✅ Sync to Mailchimp
-// //       await syncContactToMailchimp(updated);
-// //     }
-
-// //     res.sendStatus(200);
-// //   } catch (error) {
-// //     console.error("❌ Webhook error:", error.message);
-// //     res.sendStatus(500);
-// //   }
-// // });
-
-// // ----------------------
-// // Clover Webhook endpoint
-// // ----------------------
-// app.post("/webhook/clover", async (req, res) => {
-//   try {
-//     console.log("📩 Clover Webhook Received:", req.body);
-
-//     const { type, payload, merchants } = req.body;
-
-//     // Case 1: Multiple customers from 'merchants'
-//     if (merchants) {
-//       for (const merchantId in merchants) {
-//         const customers = merchants[merchantId];
-//         for (const cloverCustomer of customers) {
-//           if (!cloverCustomer.emailAddresses || cloverCustomer.emailAddresses.length === 0) {
-//             console.log("⚠️ Skipping customer: no email address found.");
-//             continue;
-//           }
-
-//           const email = cloverCustomer.emailAddresses[0].emailAddress;
-//           const firstName = cloverCustomer.firstName || "";
-//           const lastName = cloverCustomer.lastName || "";
-
-//           const updated = await Customer.findOneAndUpdate(
-//             { cloverId: cloverCustomer.id },
-//             { email, firstName, lastName },
-//             { upsert: true, new: true }
-//           );
-
-//           console.log("✅ Customer saved/updated:", updated);
-//           await syncContactToMailchimp(updated);
-//         }
-//       }
-//     }
-
-//     // Case 2: Single customer from 'payload'
-//     else if (type === "customer" && payload) {
-//       const cloverCustomer = payload;
-//       if (!cloverCustomer.emailAddresses || cloverCustomer.emailAddresses.length === 0) {
-//         console.log("⚠️ Skipping customer: no email address found.");
-//         return res.sendStatus(200);
-//       }
-
-//       const email = cloverCustomer.emailAddresses[0].emailAddress;
-//       const firstName = cloverCustomer.firstName || "";
-//       const lastName = cloverCustomer.lastName || "";
-
-//       const updated = await Customer.findOneAndUpdate(
-//         { cloverId: cloverCustomer.id },
-//         { email, firstName, lastName },
-//         { upsert: true, new: true }
-//       );
-
-//       console.log("✅ Customer saved/updated:", updated);
-//       await syncContactToMailchimp(updated);
-//     }
-
-//     res.sendStatus(200);
-//   } catch (error) {
-//     console.error("❌ Webhook error:", error.message);
-//     res.sendStatus(500);
-//   }
-// });
-
-
-
-// // ----------------------
-// // Start Server
-// // ----------------------
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () =>
-//   console.log(`🚀 Server running on http://localhost:${PORT}`)
-// );
-
-
-
-
-
-
-
-
-
-
-
-
-
-// require("dotenv").config();
-// const express = require("express");
-// const bodyParser = require("body-parser");
-// const mongoose = require("mongoose");
-// const axios = require("axios");
-// const crypto = require("crypto");
-
-// const app = express();
-// app.use(bodyParser.json());
-
-// // ----------------------
-// // MongoDB Atlas Connection
-// // ----------------------
-// mongoose
-//   .connect(process.env.MONGO_URI)
-//   .then(() => console.log("✅ Connected to MongoDB Atlas"))
-//   .catch((err) =>
-//     console.error("❌ MongoDB connection error:", err.message)
-//   );
-
-// // ----------------------
-// // Customer Schema
-// // ----------------------
-// const customerSchema = new mongoose.Schema({
-//   cloverId: { type: String, required: true, unique: true },
-//   email: { type: String, required: true },
-//   firstName: String,
-//   lastName: String,
-// });
-
-// const Customer = mongoose.model("Customer", customerSchema);
-
-// // ----------------------
-// // Mailchimp API setup
-// // ----------------------
-// const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
-// const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX;
-// const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_AUDIENCE_ID;
-
-// async function syncContactToMailchimp(customer) {
-//   try {
-//     const data = {
-//       email_address: customer.email,
-//       status_if_new: "subscribed",
-//       merge_fields: {
-//         FNAME: customer.firstName || "",
-//         LNAME: customer.lastName || "",
-//       },
-//     };
-
-//     const subscriberHash = crypto
-//       .createHash("md5")
-//       .update(customer.email.toLowerCase())
-//       .digest("hex");
-
-//     const response = await axios.put(
-//       `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}`,
-//       data,
-//       {
-//         headers: {
-//           Authorization: `apikey ${MAILCHIMP_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     console.log("✅ Synced to Mailchimp:", response.data.email_address);
-//   } catch (err) {
-//     console.error(
-//       "❌ Mailchimp sync error:",
-//       err.response?.data || err.message
-//     );
-//   }
-// }
-
-// // ----------------------
-// // Clover Webhook endpoint
-// // ----------------------
-// app.post("/webhook/clover", async (req, res) => {
-//   try {
-//     // Log full payload for debugging
-//     console.log("📩 Full Clover Webhook Payload:", JSON.stringify(req.body, null, 2));
-
-//     const { objectId, type, payload } = req.body;
-
-//     if (type === "customer") {
-//       const cloverCustomer = payload;
-
-//       // Safe email fetching
-//       let email = "dummy@example.com"; // default fallback
-//       if (cloverCustomer.emailAddresses && cloverCustomer.emailAddresses.length > 0) {
-//         email = cloverCustomer.emailAddresses[0].emailAddress || email;
-//       }
-
-//       const firstName = cloverCustomer.firstName || "";
-//       const lastName = cloverCustomer.lastName || "";
-
-//       if (!email || email === "dummy@example.com") {
-//         console.warn("⚠️ Customer has missing or dummy email:", cloverCustomer);
-//       }
-
-//       // Upsert in MongoDB
-//       const updated = await Customer.findOneAndUpdate(
-//         { cloverId: cloverCustomer.id },
-//         { email, firstName, lastName },
-//         { upsert: true, new: true }
-//       );
-
-//       console.log("✅ Customer saved/updated:", updated);
-
-//       // Sync to Mailchimp
-//       await syncContactToMailchimp(updated);
-//     }
-
-//     res.sendStatus(200);
-//   } catch (error) {
-//     console.error("❌ Webhook error:", error.message);
-//     res.sendStatus(500);
-//   }
-// });
-
-// // ----------------------
-// // Start Server
-// // ----------------------
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
-
-
-
-
-
-
-
-
-
-// server.js
-// require("dotenv").config();
-// const express = require("express");
-// const bodyParser = require("body-parser");
-// const mongoose = require("mongoose");
-// const axios = require("axios");
-// const crypto = require("crypto");
-
-// const app = express();
-// app.use(bodyParser.json());
-
-// // ----------------------
-// // MongoDB Atlas Connection
-// // ----------------------
-// mongoose
-//   .connect(process.env.MONGO_URI)
-//   .then(() => console.log("✅ Connected to MongoDB Atlas"))
-//   .catch((err) =>
-//     console.error("❌ MongoDB connection error:", err.message)
-//   );
-
-// // ----------------------
-// // Customer Schema
-// // ----------------------
-// const customerSchema = new mongoose.Schema({
-//   cloverId: { type: String, required: true, unique: true },
-//   email: { type: String, required: true },
-//   firstName: String,
-//   lastName: String,
-// });
-
-// const Customer = mongoose.model("Customer", customerSchema);
-
-// // ----------------------
-// // Mailchimp API setup
-// // ----------------------
-// const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
-// const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX; // e.g. us7
-// const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_AUDIENCE_ID;
-
-// // async function syncContactToMailchimp(customer) {
-// //   try {
-// //     const data = {
-// //       email_address: customer.email,
-// //       status_if_new: "subscribed",
-// //       merge_fields: {
-// //         FNAME: customer.firstName || "",
-// //         LNAME: customer.lastName || "",
-// //       },
-// //     };
-
-// //     const subscriberHash = crypto
-// //       .createHash("md5")
-// //       .update(customer.email.toLowerCase())
-// //       .digest("hex");
-
-// //     const response = await axios.put(
-// //       `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}`,
-// //       data,
-// //       {
-// //         headers: {
-// //           Authorization: `apikey ${MAILCHIMP_API_KEY}`,
-// //           "Content-Type": "application/json",
-// //         },
-// //       }
-// //     );
-
-// //     console.log("✅ Synced to Mailchimp:", response.data.email_address);
-// //   } catch (err) {
-// //     console.error(
-// //       "❌ Mailchimp sync error:",
-// //       err.response?.data || err.message
-// //     );
-// //   }
-// // }
-
-// async function syncContactToMailchimp(customer) {
-//   try {
-//     // Construct merge fields
-//     const mergeFields = {
-//       FNAME: customer.firstName || "",
-//       LNAME: customer.lastName || "",
-//     };
-
-//     // Add address if available in MongoDB (optional)
-//     if (customer.address) {
-//       mergeFields.ADDRESS = {
-//         addr1: customer.address.address1 || "",
-//         addr2: customer.address.address2 || "",
-//         city: customer.address.city || "",
-//         state: customer.address.state || "",
-//         zip: customer.address.zip || "",
-//         country: customer.address.country || "",
-//       };
-//     }
-
-//     const data = {
-//       email_address: customer.email,
-//       status_if_new: "subscribed",
-//       merge_fields: mergeFields,
-//     };
-
-//     const subscriberHash = require("crypto")
-//       .createHash("md5")
-//       .update(customer.email.toLowerCase())
-//       .digest("hex");
-
-//     const response = await axios.put(
-//       `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}`,
-//       data,
-//       {
-//         headers: {
-//           Authorization: `apikey ${MAILCHIMP_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     console.log("✅ Synced to Mailchimp:", response.data.email_address);
-//   } catch (err) {
-//     console.error(
-//       "❌ Mailchimp sync error:",
-//       err.response?.data || err.message
-//     );
-//   }
-// }
-
-
-// // ----------------------
-// // Clover Webhook endpoint
-// // ----------------------
-// app.post("/webhook/clover", async (req, res) => {
-//   try {
-//     console.log("📩 Full Clover Webhook Payload:", JSON.stringify(req.body, null, 2));
-
-//     const merchants = req.body.merchants;
-//     if (!merchants) return res.sendStatus(200);
-
-//     const merchantId = Object.keys(merchants)[0];
-//     const events = merchants[merchantId];
-
-//     for (const event of events) {
-//       if (event.type === "CREATE" || event.type === "UPDATE") {
-//         const cloverCustomer = event.object;
-
-//         if (!cloverCustomer || !cloverCustomer.emailAddresses || cloverCustomer.emailAddresses.length === 0) {
-//           console.log("⚠️ Skipping customer: no email address found.");
-//           continue;
-//         }
-
-//         const email = cloverCustomer.emailAddresses[0].emailAddress;
-//         const firstName = cloverCustomer.firstName || "";
-//         const lastName = cloverCustomer.lastName || "";
-
-//         // Upsert in MongoDB
-//         const updated = await Customer.findOneAndUpdate(
-//           { cloverId: cloverCustomer.id },
-//           { email, firstName, lastName },
-//           { upsert: true, new: true }
-//         );
-
-//         console.log("✅ Customer saved/updated in MongoDB:", updated);
-
-//         // Sync to Mailchimp
-//         await syncContactToMailchimp(updated);
-//       }
-//     }
-
-//     res.sendStatus(200);
-//   } catch (error) {
-//     console.error("❌ Webhook error:", error.message);
-//     res.sendStatus(500);
-//   }
-// });
-
-// // ----------------------
-// // Start Server
-// // ----------------------
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () =>
-//   console.log(`🚀 Server running on http://localhost:${PORT}`)
-// );
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // server.js
-// require("dotenv").config();
-// const express = require("express");
-// const path = require("path");
-
-// const bodyParser = require("body-parser");
-// const mongoose = require("mongoose");
-// const axios = require("axios");
-// const crypto = require("crypto");
-
-// const app = express();
-// app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(bodyParser.json());
-// app.use(bodyParser.json());
-
-
-// app.use(express.static("public"));
-
-// // ----------------------
-// // MongoDB Atlas Connection
-// // ----------------------
-
-// app.get("/", (req, res) => {
-//   res.send("🚀 Clover + Mailchimp Server is Running!");
-// });
-
-
-
-// app.get("/", (req, res) => {
-//   res.send("🚀 Clover + Mailchimp Server is Running!");
-// });
-
-
-
-
-// mongoose
-//   .connect(process.env.MONGO_URI)
-//   .then(() => console.log("✅ Connected to MongoDB Atlas"))
-//   .catch((err) =>
-//     console.error("❌ MongoDB connection error:", err.message)
-//   );
-
-// // ----------------------
-// // Customer Schema
-// // ----------------------
-// const customerSchema = new mongoose.Schema({
-//   cloverId: { type: String, required: true, unique: true },
-//   firstName: String,
-//   lastName: String,
-//   email: String,
-//   phone: String,
-//   smsOptIn: Boolean,
-//   address: Object,
-//   raw: Object,
-//   lastSyncedToMailchimp: Date,
-// });
-
-// const Customer = mongoose.model("Customer", customerSchema);
-
-// // ----------------------
-// // Mailchimp API setup
-// // ----------------------
-// const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
-// const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX; // e.g. us7
-// const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_AUDIENCE_ID;
-
-// async function syncContactToMailchimp(customer) {
-//   try {
-//     // Construct merge fields
-//     const mergeFields = {
-//       FNAME: customer.firstName || "",
-//       LNAME: customer.lastName || "",
-//     };
-
-//     // Add address if available
-//     if (customer.address) {
-//       mergeFields.ADDRESS = {
-//         addr1: customer.address.address1 || "",
-//         addr2: customer.address.address2 || "",
-//         city: customer.address.city || "",
-//         state: customer.address.state || "",
-//         zip: customer.address.zip || "",
-//         country: customer.address.country || "",
-//       };
-//     }
-
-//     const data = {
-//       email_address: customer.email,
-//       status_if_new: "subscribed",
-//       merge_fields: mergeFields,
-//     };
-
-//     const subscriberHash = crypto
-//       .createHash("md5")
-//       .update(customer.email.toLowerCase())
-//       .digest("hex");
-
-//     const response = await axios.put(
-//       `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}`,
-//       data,
-//       {
-//         headers: {
-//           Authorization: `apikey ${MAILCHIMP_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     console.log("✅ Synced to Mailchimp:", response.data.email_address);
-
-//     // Update last synced timestamp
-//     customer.lastSyncedToMailchimp = new Date();
-//     await customer.save();
-//   } catch (err) {
-//     console.error(
-//       "❌ Mailchimp sync error:",
-//       err.response?.data || err.message
-//     );
-//   }
-// }
-
-// // ----------------------
-// // Clover Webhook endpoint
-// // ----------------------
-// // app.post("/webhook/clover", async (req, res) => {
-// //   try {
-// //     console.log("📩 Full Clover Webhook Payload:", JSON.stringify(req.body, null, 2));
-
-// //     const merchants = req.body.merchants;
-// //     if (!merchants) return res.sendStatus(200);
-
-// //     const merchantId = Object.keys(merchants)[0];
-// //     const events = merchants[merchantId];
-
-// //     for (const event of events) {
-// //       if (event.type === "CREATE" || event.type === "UPDATE") {
-// //         const cloverCustomer = event.object;
-
-// //         if (!cloverCustomer || !cloverCustomer.emailAddresses || cloverCustomer.emailAddresses.length === 0) {
-// //           console.log("⚠️ Skipping customer: no email address found.");
-// //           continue;
-// //         }
-
-// //         const email = cloverCustomer.emailAddresses[0].emailAddress;
-// //         const firstName = cloverCustomer.firstName || "";
-// //         const lastName = cloverCustomer.lastName || "";
-
-// //         // ✅ Upsert full customer in MongoDB
-// //         const updated = await Customer.findOneAndUpdate(
-// //           { cloverId: cloverCustomer.id },
-// //           {
-// //             firstName,
-// //             lastName,
-// //             email,
-// //             phone: cloverCustomer.phoneNumbers?.[0]?.phoneNumber || "",
-// //             smsOptIn: cloverCustomer.marketingAllowed || false,
-// //             address: cloverCustomer.addresses?.[0] || {},
-// //             raw: cloverCustomer,
-// //           },
-// //           { upsert: true, new: true }
-// //         );
-
-// //         console.log("✅ Customer saved/updated in MongoDB:", updated);
-
-// //         // ✅ Sync to Mailchimp
-// //         await syncContactToMailchimp(updated);
-// //       }
-// //     }
-
-// //     res.sendStatus(200);
-// //   } catch (error) {
-// //     console.error("❌ Webhook error:", error.message);
-// //     res.sendStatus(500);
-// //   }
-// // });
-
-// app.post("/add-customer", async (req, res) => {
-//   const { firstName, lastName, phone, consent } = req.body;
-
-//   try {
-//     // Always save customer in MongoDB
-//     const newCustomer = new Customer({
-//       firstName,
-//       lastName,
-//       phone,
-//       consent: consent === "yes", // store as boolean
-//     });
-//     await newCustomer.save();
-
-//     // If consent is true → subscribe to Mailchimp
-//     if (consent === "yes") {
-//       // Example Mailchimp API call
-//       // await mailchimp.lists.addListMember("yourAudienceId", {
-//       //   email_address: phone + "@example.com", // phone converted to fake email OR use actual email field
-//       //   status: "subscribed",
-//       //   merge_fields: { FNAME: firstName, LNAME: lastName }
-//       // });
-
-//       console.log("Customer subscribed to Mailchimp:", firstName);
-//     }
-
-//     res.send({ success: true, message: "Customer saved successfully!" });
-//   } catch (error) {
-//     console.error("Error saving customer:", error);
-//     res.status(500).send({ success: false, error: "Something went wrong" });
-//   }
-// });
-
-
-// // ----------------------
-// // Start Server
-// // ----------------------
-
-
-// app.get("/form", (req, res) => {
-//   res.sendFile(path.join(__dirname, "public", "Customer.html"));
-// });
-
-
-// app.post("/add-customer", (req, res) => {
-//   const { firstName, lastName, phone, consent } = req.body;
-
-//   // For now, just return the data back to confirm
-//   res.send({
-//     message: "Customer received!",
-//     data: { firstName, lastName, phone, consent },
-//   });
-// });
-
-
-
-// const PORT = process.env.PORT || 3000;
-// app.listen(3000, () =>
-//   console.log(`🚀 Server running on http://localhost:${3000}`)
-// );
-
-
-
-
-// server.js
 require("dotenv").config();
 const express = require("express");
-const path = require("path");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const axios = require("axios");
@@ -780,138 +9,204 @@ const crypto = require("crypto");
 
 const app = express();
 
-// ----------------------
 // Middleware
-// ----------------------
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// ----------------------
-// MongoDB Atlas Connection
-// ----------------------
+// Mailchimp config
+const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
+const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX;
+const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID;
+
+/**
+ * 🔹 Get marketing permissions from list or member
+ */
+async function getListMarketingPermissions(testEmail) {
+  // Try list endpoint first
+  try {
+    const listUrl = `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_AUDIENCE_ID}`;
+    const listRes = await axios.get(listUrl, {
+      headers: { Authorization: `apikey ${MAILCHIMP_API_KEY}` },
+    });
+    if (Array.isArray(listRes.data.marketing_permissions)) {
+      return listRes.data.marketing_permissions;
+    }
+  } catch (err) {
+    console.warn(
+      "⚠️ List endpoint didn’t return marketing_permissions:",
+      err.response?.data || err.message
+    );
+  }
+
+  // Fallback to member (requires test email already in list)
+  if (testEmail) {
+    try {
+      const subHash = crypto.createHash("md5").update(testEmail.toLowerCase()).digest("hex");
+      const memberUrl = `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_AUDIENCE_ID}/members/${subHash}`;
+      const memberRes = await axios.get(memberUrl, {
+        headers: { Authorization: `apikey ${MAILCHIMP_API_KEY}` },
+      });
+      if (Array.isArray(memberRes.data.marketing_permissions)) {
+        return memberRes.data.marketing_permissions;
+      }
+    } catch (err) {
+      if (err.response?.status === 404) {
+        throw new Error(`Mailchimp member ${testEmail} not found (HTTP 404). Add one first.`);
+      }
+      throw new Error(
+        `Error fetching member marketing_permissions: ${err.response?.data || err.message}`
+      );
+    }
+  }
+
+  throw new Error("❌ Could not find marketing_permissions from list or member.");
+}
+
+/**
+ * 🔹 Sync contact to Mailchimp
+ */
+
+async function syncToMailchimpWithSms(customer) {
+  if (!customer || !customer.email) throw new Error("Missing customer or email");
+
+  // Normalize phone
+  let phone = (customer.phone || "").toString().trim().replace(/[^+\d]/g, "");
+  if (phone && !phone.startsWith("+")) phone = "+" + phone;
+
+  // Merge fields
+  const merge_fields = {
+    FNAME: customer.firstName || "",
+    LNAME: customer.lastName || "",
+  };
+  if (phone) {
+    merge_fields.PHONE = phone;
+    merge_fields.SMSPHONE = phone;
+  }
+
+  // Subscriber hash
+  const subHash = crypto.createHash("md5").update(customer.email.toLowerCase()).digest("hex");
+
+  // Request body without marketing_permissions
+  const body = {
+    email_address: customer.email,
+    status_if_new: "subscribed",
+    merge_fields,
+  };
+
+  try {
+    const putUrl = `https://${process.env.MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_AUDIENCE_ID}/members/${subHash}`;
+    const resp = await axios.put(putUrl, body, {
+      headers: {
+        Authorization: `apikey ${process.env.MAILCHIMP_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("✅ Mailchimp synced:", resp.data.email_address);
+    return resp.data;
+  } catch (error) {
+    console.error("❌ Error syncing customer:", error.response?.data || error.message);
+    throw error;
+  }
+}
+// Debug route
+app.get("/mailchimp/permissions", async (req, res) => {
+  try {
+    const email = req.query.email; // optional
+    const perms = await getListMarketingPermissions(email);
+    res.json({ ok: true, marketing_permissions: perms });
+  } catch (err) {
+    console.error("Error /mailchimp/permissions:", err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB Atlas"))
-  .catch((err) =>
-    console.error("❌ MongoDB connection error:", err.message)
-  );
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ MongoDB error:", err.message));
 
-// ----------------------
-// Customer Schema
-// ----------------------
+// Schema
 const customerSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   email: { type: String, required: true, unique: true },
   phone: String,
   smsOptIn: Boolean,
-  address: Object,
-  raw: Object,
   lastSyncedToMailchimp: Date,
 });
-
 const Customer = mongoose.model("Customer", customerSchema);
 
-// ----------------------
-// Mailchimp API setup
-// ----------------------
-const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
-const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX; // e.g. us7
-const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_AUDIENCE_ID;
-
-async function syncContactToMailchimp(customer) {
-  try {
-    const mergeFields = {
-      FNAME: customer.firstName || "",
-      LNAME: customer.lastName || "",
-    };
-
-    if (customer.address) {
-      mergeFields.ADDRESS = {
-        addr1: customer.address.address1 || "",
-        addr2: customer.address.address2 || "",
-        city: customer.address.city || "",
-        state: customer.address.state || "",
-        zip: customer.address.zip || "",
-        country: customer.address.country || "",
-      };
-    }
-
-    const data = {
-      email_address: customer.email,
-      status_if_new: "subscribed",
-      merge_fields: mergeFields,
-    };
-
-    const subscriberHash = crypto
-      .createHash("md5")
-      .update(customer.email.toLowerCase())
-      .digest("hex");
-
-    const response = await axios.put(
-      `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}`,
-      data,
-      {
-        headers: {
-          Authorization: `apikey ${MAILCHIMP_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log("✅ Synced to Mailchimp:", response.data.email_address);
-
-    customer.lastSyncedToMailchimp = new Date();
-    await customer.save();
-  } catch (err) {
-    console.error("❌ Mailchimp sync error:", err.response?.data || err.message);
-  }
-}
-
-// ----------------------
-// Serve HTML form
-// ----------------------
+// HTML form
 app.get("/form", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "Customer.html"));
+  res.sendFile(__dirname + "/public/Customer.html");
 });
 
-// ----------------------
-// Handle form submission
-// ----------------------
+// Add customer route
 app.post("/add-customer", async (req, res) => {
-  const { firstName, lastName, email, phone, consent } = req.body;
+  try {
+    const { firstName, lastName, email, phone, consent } = req.body;
 
-  if (!email) {
-    return res.status(400).send({ success: false, error: "Email is required" });
+    // Save in DB
+    const newCustomer = new Customer({
+      firstName,
+      lastName,
+      email,
+      phone,
+      smsOptIn: consent === "yes",
+    });
+    await newCustomer.save();
+
+    // Sync with Mailchimp
+    await syncToMailchimpWithSms({
+      email,
+      firstName,
+      lastName,
+      phone,
+      smsOptIn: consent === "yes",
+    });
+
+    res.send("✅ Customer added successfully!");
+  } catch (err) {
+    console.error("❌ Error adding customer:", err.message);
+    res.status(500).send("Error adding customer.");
   }
+});
+
+// Clover webhook
+app.post("/webhook", (req, res) => {
+  console.log("📩 Webhook received:", req.body);
+  res.sendStatus(200);
+});
+
+// Clover OAuth callback
+app.get("/auth/clover/callback", async (req, res) => {
+  const { code, merchant_id } = req.query;
+  if (!code || !merchant_id) return res.status(400).send("Missing code or merchant_id");
 
   try {
-    // Upsert customer by email
-    const customer = await Customer.findOneAndUpdate(
-      { email }, // search by email
-      {
-        firstName,
-        lastName,
-        phone,
-        smsOptIn: consent === "yes",
+    const tokenResp = await axios.post("https://sandbox.dev.clover.com/oauth/token", null, {
+      params: {
+        client_id: process.env.CLOVER_CLIENT_ID,
+        client_secret: process.env.CLOVER_CLIENT_SECRET,
+        code,
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
+    });
 
-    if (consent === "yes") {
-      await syncContactToMailchimp(customer);
-    }
+    console.log("✅ OAuth Success!");
+    console.log("Merchant ID:", merchant_id);
+    console.log("Access Token:", tokenResp.data.access_token);
 
-    res.send({ success: true, message: "Customer saved successfully!" });
-  } catch (error) {
-    console.error("Error saving customer:", error);
-    res.status(500).send({ success: false, error: "Something went wrong" });
+    res.send("✅ Clover App Installed! You can close this window.");
+  } catch (err) {
+    console.error("❌ OAuth error:", err.message);
+    res.status(500).send("OAuth failed");
   }
 });
 
-// ----------------------
-// Start Server
-// ----------------------
-const PORT = process.env.PORT || 5000;
-app.listen(5000, () => console.log(`🚀 Server running on http://localhost:${5000}`));
+// Start server
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+
