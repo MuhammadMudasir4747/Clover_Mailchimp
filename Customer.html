@@ -1,0 +1,51 @@
+<form action="/subscribe" method="POST">
+  <!-- Email -->
+  <label>Email Address:</label>
+  <input type="email" name="email" required />
+  <br /><br />
+
+  <!-- First Name -->
+  <label>First Name:</label>
+  <input type="text" name="fname" />
+  <br /><br />
+
+  <!-- Last Name -->
+  <label>Last Name:</label>
+  <input type="text" name="lname" />
+  <br /><br />
+
+  <!-- Address -->
+  <label>Street Address:</label>
+  <input type="text" name="address" />
+  <br /><br />
+
+  <!-- Alternate Phone (will go to PHONE field, optional) -->
+  <label>Phone Number (other than SMS):</label>
+  <input type="text" name="phone_alt" placeholder="(123) 456-7890" />
+  <br /><br />
+
+  <!-- Birthday -->
+  <label>Birthday (MM/DD):</label>
+  <input type="text" name="birthday" placeholder="MM/DD" />
+  <br /><br />
+
+  <!-- Company -->
+  <label>Company:</label>
+  <input type="text" name="company" />
+  <br /><br />
+
+  <!-- SMS Phone (required for SMS opt-in) -->
+  <label>SMS Phone Number (with +country code):</label>
+  <input type="text" name="phone" placeholder="+16129810832" required />
+  <br /><br />
+
+  <!-- Consent -->
+  <label>
+    <input type="checkbox" name="consent" value="true" required />
+    I agree to receive marketing emails and SMS
+  </label>
+  <br /><br />
+
+  <!-- Submit -->
+  <button type="submit">Subscribe</button>
+</form>
