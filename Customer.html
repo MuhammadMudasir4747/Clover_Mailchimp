@@ -1,140 +1,199 @@
-<!-- <form action="/subscribe" method="POST">
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customer Signup</title>
+</head>
+<body>
+  <div id="mc_embed_signup">
+    <form 
+      id="mc-embedded-subscribe-form"
+      action="https://blueribbonmeatsmn.us3.list-manage.com/subscribe/post?u=8a6f79397adb1c04428af849d&id=465b6bdfc1&f_id=009ff5e0f0"
+      method="POST"
+      target="_blank"
+      novalidate
+    >
+      <label>Email Address:</label>
+      <input type="email" name="EMAIL" required />
+      <br /><br />
 
-  <label>Email Address:</label>
-  <input type="email" name="email" required />
-  <br /><br />
+      <label>First Name:</label>
+      <input type="text" name="FNAME" />
+      <br /><br />
 
+      <label>Last Name:</label>
+      <input type="text" name="LNAME" />
+      <br /><br />
 
-  <label>First Name:</label>
-  <input type="text" name="fname" />
-  <br /><br />
+      <label>Street Address:</label>
+      <input type="text" name="ADDRESS" />
+      <br /><br />
 
- 
-  <label>Last Name:</label>
-  <input type="text" name="lname" />
-  <br /><br />
+      <label>Phone Number (other than SMS):</label>
+      <input type="text" name="PHONE" placeholder="(123) 456-7890" />
+      <br /><br />
 
+      <label>Birthday (MM/DD):</label>
+      <input type="text" name="BIRTHDAY" placeholder="MM/DD" />
+      <br /><br />
 
-  <label>Street Address:</label>
-  <input type="text" name="address" />
-  <br /><br />
+      <label>Company:</label>
+      <input type="text" name="COMPANY" />
+      <br /><br />
 
+      <label>SMS Phone Number (with +country code):</label>
+      <input type="text" name="SMSPHONE" placeholder="+16129810832" required />
+      <br /><br />
 
-  <label>Phone Number (other than SMS):</label>
-  <input type="text" name="phone_alt" placeholder="(123) 456-7890" />
-  <br /><br />
+      
+      <label>
+        <input type="checkbox" name="gdpr[32764]" value="Y"> I agree to receive Email marketing
+      </label>
+      <br />
+      <label>
+        <input type="checkbox" name="gdpr[32767]" value="Y" required> I agree to receive SMS marketing
+      </label>
+      <br /><br />
 
+     
+      <div style="position:absolute;left:-5000px;" aria-hidden="true">
+        <input type="text" name="b_8a6f79397adb1c04428af849d_465b6bdfc1" tabindex="-1" value="">
+      </div>
 
-  <label>Birthday (MM/DD):</label>
-  <input type="text" name="birthday" placeholder="MM/DD" />
-  <br /><br />
-
- 
-  <label>Company:</label>
-  <input type="text" name="company" />
-  <br /><br />
-
-
-  <label>SMS Phone Number (with +country code):</label>
-  <input type="text" name="phone" placeholder="+16129810832" required />
-  <br /><br />
-
- 
-  <label>
-    <input type="checkbox" name="consent" value="true" required />
-    I agree to receive marketing emails and SMS
-  </label>
-  <br /><br />
-
-
-  <button type="submit">Subscribe</button>
-</form>  -->
-
-
-<div id="mc_embed_signup">
-  <form 
-  action="https://blueribbonmeatsmn.us3.list-manage.com/subscribe/post?u=8a6f79397adb1c04428af849d&id=465b6bdfc1&f_id=009ff5e0f0"
-  method="POST"
-  target="_blank"
-  novalidate
->
-  <label>Email Address:</label>
-  <input type="email" name="EMAIL" required />
-  <br /><br />
-
-  <label>First Name:</label>
-  <input type="text" name="FNAME" />
-  <br /><br />
-
-  <label>Last Name:</label>
-  <input type="text" name="LNAME" />
-  <br /><br />
-
-  <label>Street Address:</label>
-  <input type="text" name="ADDRESS" />
-  <br /><br />
-
-  <label>Phone Number (other than SMS):</label>
-  <input type="text" name="PHONE" placeholder="(123) 456-7890" />
-  <br /><br />
-
-  <label>Birthday (MM/DD):</label>
-  <input type="text" name="BIRTHDAY" placeholder="MM/DD" />
-  <br /><br />
-
-  <label>Company:</label>
-  <input type="text" name="COMPANY" />
-  <br /><br />
-
-  <label>SMS Phone Number (with +country code):</label>
-  <input type="text" name="SMSPHONE" placeholder="+16129810832" required />
-  <br /><br />
-
-  <!-- GDPR checkboxes must use Mailchimp’s internal IDs -->
-  <label>
-    <input type="checkbox" name="gdpr[32764]" value="Y"> I agree to receive Email marketing
-  </label>
-  <br />
-
-  <label>
-    <input type="checkbox" name="gdpr[32767]" value="Y" required> I agree to receive SMS marketing
-  </label>
-  <br /><br />
-
-  <!-- Bot field (important: must keep as-is) -->
-  <div style="position:absolute;left:-5000px;" aria-hidden="true">
-    <input type="text" name="b_8a6f79397adb1c04428af849d_465b6bdfc1" tabindex="-1" value="">
+      <button type="submit">Subscribe</button>
+    </form>
   </div>
 
-  <button type="submit">Subscribe</button>
-</form>
 
-</div>
 
 <script>
-  // Intercept form submission
-  const form = document.getElementById("mc-embedded-subscribe-form");
+async function prefillForms() {
+  try {
+    const res = await fetch("/api/customer/latest");
+    if (!res.ok) return;
+    const data = await res.json();
 
-  form.addEventListener("submit", function(e) {
-    // Prepare payload for your server
-    const payload = {
-      email: form.EMAIL.value,
-      fname: form.FNAME.value,
-      lname: form.LNAME.value,
-      smsPhone: form.SMSPHONE.value,
-      consent: form.querySelector('input[name="gdpr[32767]"]').checked,
+    // ===== 1️⃣ Fill your own HTML form =====
+    const htmlFieldMap = {
+      EMAIL: "email",
+      FNAME: "fname",
+      LNAME: "lname",
+      ADDRESS: "address",
+      PHONE: "phone_alt",
+      BIRTHDAY: "birthday",
+      COMPANY: "company",
+      SMSPHONE: "phone_sms"
     };
 
-    // Send to your server asynchronously
-    fetch("/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => console.log("📥 Saved to server:", data))
-    .catch(err => console.error("❌ Error saving to server:", err));
+    for (const name in htmlFieldMap) {
+      const el = document.querySelector(`input[name='${name}']`);
+      if (el) el.value = data[htmlFieldMap[name]] || "";
+    }
 
-    // Let the form continue to submit to Mailchimp
-  });
+    // Don't prefill consent checkboxes
+    const gdprEmailHTML = document.querySelector("input[name='gdpr[32764]']");
+    const gdprSMSHTML = document.querySelector("input[name='gdpr[32767]']");
+    if (gdprEmailHTML) gdprEmailHTML.checked = false;
+    if (gdprSMSHTML) gdprSMSHTML.checked = false;
+
+    // ===== 2️⃣ Fill Mailchimp embedded form =====
+    const fieldMap = {
+      EMAIL: "email",
+      FNAME: "fname",
+      LNAME: "lname",
+      ADDRESS: "address",
+      PHONE: "phone_alt",
+      BIRTHDAY: "birthday",
+      COMPANY: "company",
+      SMSPHONE: "phone_sms"
+    };
+
+    const container = document.getElementById("mc_embed_signup");
+    if (!container) return;
+
+    const observer = new MutationObserver(() => {
+      let filled = false;
+      for (const id in fieldMap) {
+        const el = document.getElementById("mce-" + id);
+        if (el && !el.value) {
+          el.value = data[fieldMap[id]] || "";
+          filled = true;
+        }
+      }
+
+      const gdprEmail = document.getElementById("gdpr_32764");
+      const gdprSMS = document.getElementById("gdpr_32767");
+      if (gdprEmail) gdprEmail.checked = false;
+      if (gdprSMS) gdprSMS.checked = false;
+
+      if (filled) observer.disconnect(); // stop observing once fields filled
+    });
+
+    observer.observe(container, { childList: true, subtree: true });
+
+  } catch (err) {
+    console.error("Prefill error:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", prefillForms);
 </script>
+
+
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mailchimp Signup Test</title>
+</head>
+<body>
+  <h2>Subscribe via HTML Form</h2>
+  <form 
+    id="custom-mailchimp-form"
+    action="https://blueribbonmeatsmn.us3.list-manage.com/subscribe/post?u=8a6f79397adb1c04428af849d&id=465b6bdfc1"
+    method="POST"
+    target="_blank"
+  >
+    <label>Email:</label>
+    <input type="email" name="EMAIL" required /><br><br>
+
+    <label>First Name:</label>
+    <input type="text" name="FNAME" /><br><br>
+
+    <label>Last Name:</label>
+    <input type="text" name="LNAME" /><br><br>
+
+    <label>SMS Phone:</label>
+    <input type="text" name="SMSPHONE" /><br><br>
+
+    <!-- Hidden field to prevent bot submissions (Mailchimp requires it) -->
+    <div style="position:absolute; left:-5000px;" aria-hidden="true">
+      <input type="text" name="b_8a6f79397adb1c04428af849d_465b6bdfc1" tabindex="-1" value="">
+    </div>
+
+    <button type="submit">Subscribe</button>
+  </form>
+
+  <script>
+    async function prefillForm() {
+      try {
+        const res = await fetch("/api/customer/latest");
+        if (!res.ok) return;
+        const data = await res.json();
+
+        document.querySelector("input[name='EMAIL']").value = data.email || "";
+        document.querySelector("input[name='FNAME']").value = data.fname || "";
+        document.querySelector("input[name='LNAME']").value = data.lname || "";
+        document.querySelector("input[name='SMSPHONE']").value = data.phone_sms || "";
+      } catch (err) {
+        console.error("Prefill error:", err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", prefillForm);
+  </script>
+</body>
+</html>
